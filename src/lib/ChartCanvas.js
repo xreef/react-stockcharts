@@ -260,9 +260,15 @@ function calculateState(props) {
 
 	const { plotData, domain } = filterData(fullData, extent, inputXAccesor, updatedXScale);
 
+	// FIXME: FIX TO SUPPORT ONE POINT
+	if (process.env.NODE_ENV !== "production" && plotData.length < 1) {
+		throw new Error(`Showing ${plotData.length} datapoints, review the 'xExtents' prop of ChartCanvas`);
+	}
+	/*
 	if (process.env.NODE_ENV !== "production" && plotData.length <= 1) {
 		throw new Error(`Showing ${plotData.length} datapoints, review the 'xExtents' prop of ChartCanvas`);
 	}
+	*/
 	return {
 		plotData,
 		xScale: updatedXScale.domain(domain),
@@ -577,14 +583,22 @@ class ChartCanvas extends Component {
 			const { fullData } = this;
 			const firstItem = head(fullData);
 
-			const start = head(xScale.domain());
-			const end = xAccessor(firstItem);
+			// const start = head(xScale.domain());
+			// const end = xAccessor(firstItem);
+			const leftStart = head(xScale.domain());
+			const leftEnd = xAccessor(firstItem);
+
+			const lastItem = last(fullData);
+			const rightEnd = last(xScale.domain());
+			const rightStart = xAccessor(lastItem);
+
 			const { onLoadMore } = this.props;
 
 			this.setState(state, () => {
-				if (start < end) {
-					onLoadMore(start, end);
-				}
+				if (leftStart < leftEnd || rightStart < rightEnd) onLoadMore(leftStart, leftEnd, rightStart, rightEnd);
+				// if (start < end) {
+				// 	onLoadMore(start, end);
+				// }
 			});
 		}
 	}
@@ -614,10 +628,18 @@ class ChartCanvas extends Component {
 
 		this.clearThreeCanvas();
 
+
 		const firstItem = head(fullData);
 
-		const start = head(xScale.domain());
-		const end = xAccessor(firstItem);
+		// const start = head(xScale.domain());
+		// const end = xAccessor(firstItem);
+		const leftStart = head(xScale.domain());
+		const leftEnd = xAccessor(firstItem);
+
+		const lastItem = last(fullData);
+		const rightEnd = last(xScale.domain());
+		const rightStart = xAccessor(lastItem);
+
 		const { onLoadMore } = this.props;
 
 		this.mutableState = {
@@ -641,9 +663,10 @@ class ChartCanvas extends Component {
 			plotData,
 			chartConfig,
 		}, () => {
-			if (start < end) {
-				onLoadMore(start, end);
-			}
+			if (leftStart < leftEnd || rightStart < rightEnd) onLoadMore(leftStart, leftEnd, rightStart, rightEnd);
+			// if (start < end) {
+			// 	onLoadMore(start, end);
+			// }
 		});
 	}
 	xAxisZoom(newDomain) {
@@ -652,9 +675,18 @@ class ChartCanvas extends Component {
 
 		const { xAccessor } = this.state;
 		const { fullData } = this;
+		// const firstItem = head(fullData);
+		// const start = head(xScale.domain());
+		// const end = xAccessor(firstItem);
 		const firstItem = head(fullData);
-		const start = head(xScale.domain());
-		const end = xAccessor(firstItem);
+
+		const leftStart = head(xScale.domain());
+		const leftEnd = xAccessor(firstItem);
+
+		const lastItem = last(fullData);
+		const rightEnd = last(xScale.domain());
+		const rightStart = xAccessor(lastItem);
+
 		const { onLoadMore } = this.props;
 
 		this.setState({
@@ -662,7 +694,8 @@ class ChartCanvas extends Component {
 			plotData,
 			chartConfig,
 		}, () => {
-			if (start < end) onLoadMore(start, end);
+			if (leftStart < leftEnd || rightStart < rightEnd) onLoadMore(leftStart, leftEnd, rightStart, rightEnd);
+			// if (start < end) onLoadMore(start, end);
 		});
 	}
 	yAxisZoom(chartId, newDomain) {
@@ -806,10 +839,18 @@ class ChartCanvas extends Component {
 			const { xAccessor } = this.state;
 			const { fullData } = this;
 
-			const firstItem = head(fullData);
-			const start = head(xScale.domain());
-			const end = xAccessor(firstItem);
+			// const firstItem = head(fullData);
+			// const start = head(xScale.domain());
+			// const end = xAccessor(firstItem);
 			// console.log(start, end, start < end ? "Load more" : "I have it");
+			const firstItem = head(fullData);
+
+			const leftStart = head(xScale.domain());
+			const leftEnd = xAccessor(firstItem);
+
+			const lastItem = last(fullData);
+			const rightEnd = last(xScale.domain());
+			const rightStart = xAccessor(lastItem);
 
 			const { onLoadMore } = this.props;
 
@@ -820,7 +861,8 @@ class ChartCanvas extends Component {
 				plotData,
 				chartConfig,
 			}, () => {
-				if (start < end) onLoadMore(start, end);
+				if (leftStart < leftEnd || rightStart < rightEnd) onLoadMore(leftStart, leftEnd, rightStart, rightEnd);
+				// if (start < end) onLoadMore(start, end);
 			});
 		});
 	}

@@ -99,6 +99,8 @@ function extentsWrapper(useWholeData, clamp, pointsPerPxThreshold, minPointsPerP
 				log(`and ouch, that is too much, so instead showing ${plotData.length} in ${newWidth}px`);
 			} else {
 				plotData = currentPlotData || filteredData.slice(filteredData.length - showMax(width, pointsPerPxThreshold));
+				// FIXME: FIX TO SUPPORT ONE POINT
+				if (filteredData.length === 1 && plotData.length === 0) plotData = filteredData;
 				domain = currentDomain || [xAccessor(head(plotData)), xAccessor(last(plotData))];
 
 				const newXScale = xScale.copy().domain(domain);
