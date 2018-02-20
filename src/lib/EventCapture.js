@@ -26,6 +26,7 @@ class EventCapture extends Component {
 		this.handlePanEnd = this.handlePanEnd.bind(this);
 		this.handlePan = this.handlePan.bind(this);
 		this.handleTouchStart = this.handleTouchStart.bind(this);
+		this.handleTouchMove = this.handleTouchMove.bind(this);
 		this.handlePinchZoom = this.handlePinchZoom.bind(this);
 		this.handlePinchZoomEnd = this.handlePinchZoomEnd.bind(this);
 
@@ -69,6 +70,9 @@ class EventCapture extends Component {
 			select(this.node)
 				.on(MOUSEENTER, null)
 				.on(MOUSELEAVE, null);
+			const win = d3Window(this.node);
+			select(win)
+				.on(MOUSEMOVE, null);
 		}
 	}
 	handleEnter() {
@@ -395,6 +399,11 @@ class EventCapture extends Component {
 			});
 		}
 	}
+	handleTouchMove(e) {
+		const { onMouseMove } = this.props;
+		const touchXY = touchPosition(getTouchProps(e.touches[0]), e);
+		onMouseMove(touchXY, "touch", e);
+	}
 	handleTouchStart(e) {
 		this.mouseInteraction = false;
 
@@ -405,7 +414,8 @@ class EventCapture extends Component {
 
 			this.panHappened = false;
 			const touchXY = touchPosition(getTouchProps(e.touches[0]), e);
-			// onMouseMove(touchXY, "touch", e);
+			onMouseMove(touchXY, "touch", e);
+
 			if (panEnabled) {
 				const currentCharts = getCurrentCharts(chartConfig, touchXY);
 
@@ -417,8 +427,6 @@ class EventCapture extends Component {
 						chartsToPan: currentCharts,
 					}
 				});
-
-				onMouseMove(touchXY, "touch", e);
 
 				const win = d3Window(this.node);
 				select(win)
@@ -510,12 +518,21 @@ class EventCapture extends Component {
 		}
 	}
 	render() {
-		const { height, width } = this.props;
+		const { height, width, disableInteraction } = this.props;
 		const className = this.state.cursorOverrideClass != null
 			? this.state.cursorOverrideClass
 			: this.state.panInProgress
 				? "react-stockcharts-grabbing-cursor"
 				: "react-stockcharts-crosshair-cursor";
+
+		const interactionProps = disableInteraction || {
+			onWheel: this.handleWheel,
+			onMouseDown: this.handleMouseDown,
+			onClick: this.handleClick,
+			onContextMenu: this.handleRightClick,
+			onTouchStart: this.handleTouchStart,
+			onTouchMove: this.handleTouchMove,
+		};
 
 		return (
 			<rect ref={this.saveNode}
@@ -523,11 +540,7 @@ class EventCapture extends Component {
 				width={width}
 				height={height}
 				style={{ opacity: 0 }}
-				onWheel={this.handleWheel}
-				onMouseDown={this.handleMouseDown}
-				onClick={this.handleClick}
-				onContextMenu={this.handleRightClick}
-				onTouchStart={this.handleTouchStart}
+				{...interactionProps}
 			/>
 		);
 	}
@@ -549,6 +562,7 @@ EventCapture.propTypes = {
 	chartConfig: PropTypes.array,
 	xScale: PropTypes.func.isRequired,
 	xAccessor: PropTypes.func.isRequired,
+	disableInteraction: PropTypes.bool.isRequired,
 
 	getAllPanConditions: PropTypes.func.isRequired,
 
@@ -578,6 +592,7 @@ EventCapture.defaultProps = {
 	panSpeedMultiplier: 1,
 	focus: false,
 	onDragComplete: noop,
+	disableInteraction: false,
 };
 
 export default EventCapture;

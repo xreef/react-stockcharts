@@ -105,7 +105,7 @@ function getXScaleDirection(flipXScale) {
 }
 
 function calculateFullData(props) {
-	const { data: fullData, plotFull, xScale, clamp, pointsPerPxThreshold } = props;
+	const { data: fullData, plotFull, xScale, clamp, pointsPerPxThreshold, flipXScale } = props;
 	const { xAccessor, displayXAccessor, minPointsPerPxThreshold } = props;
 
 	const useWholeData = isDefined(plotFull)
@@ -118,6 +118,7 @@ function calculateFullData(props) {
 		clamp,
 		pointsPerPxThreshold,
 		minPointsPerPxThreshold,
+		flipXScale,
 	});
 
 	return {
@@ -1128,6 +1129,7 @@ class ChartCanvas extends Component {
 							xScale={xScale}
 							xAccessor={xAccessor}
 							focus={defaultFocus}
+							disableInteraction={this.props.disableInteraction}
 
 							getAllPanConditions={this.getAllPanConditions}
 							onContextMenu={this.handleContextMenu}
@@ -1216,6 +1218,7 @@ ChartCanvas.propTypes = {
 	zoomEvent: PropTypes.bool,
 	onSelect: PropTypes.func,
 	maintainPointsPerPixelOnResize: PropTypes.bool,
+	disableInteraction: PropTypes.bool,
 };
 
 ChartCanvas.defaultProps = {
@@ -1242,6 +1245,7 @@ ChartCanvas.defaultProps = {
 	zoomAnchor: mouseBasedZoomAnchor,
 	maintainPointsPerPixelOnResize: true,
 	// ratio: 2,
+	disableInteraction: false,
 };
 
 ChartCanvas.childContextTypes = {
