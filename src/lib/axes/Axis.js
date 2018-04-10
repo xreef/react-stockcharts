@@ -1,5 +1,3 @@
-"use strict";
-
 import React, { Component } from "react";
 import PropTypes from "prop-types";
 import { forceSimulation, forceX, forceCollide } from "d3-force";
@@ -96,8 +94,9 @@ Axis.propTypes = {
 	tickStrokeOpacity: PropTypes.number,
 	tickStrokeWidth: PropTypes.number,
 	tickStrokeDasharray: PropTypes.oneOf(strokeDashTypes),
-	tickValues: PropTypes.array,
+	tickValues: PropTypes.oneOfType([PropTypes.array, PropTypes.func]),
 	tickInterval: PropTypes.number,
+	tickIntervalFunction: PropTypes.func,
 	showDomain: PropTypes.bool,
 	showTicks: PropTypes.bool,
 	className: PropTypes.string,
@@ -126,21 +125,29 @@ function tickHelper(props, scale) {
 		orient, innerTickSize, tickFormat, tickPadding,
 		tickLabelFill, tickStrokeWidth, tickStrokeDasharray,
 		fontSize, fontFamily, fontWeight, showTicks, flexTicks,
-		showTickLabel,
+		showTickLabel
 	} = props;
 	const {
 		ticks: tickArguments, tickValues: tickValuesProp,
-		tickStroke, tickStrokeOpacity, tickInterval
+		tickStroke, tickStrokeOpacity, tickInterval, tickIntervalFunction
 	} = props;
 
 	// if (tickArguments) tickArguments = [tickArguments];
 
 	let tickValues;
 	if (isDefined(tickValuesProp)) {
-		tickValues = tickValuesProp;
+		if (typeof tickValuesProp === 'function') {
+			tickValues = tickValuesProp(scale.domain());
+		} else {
+			tickValues = tickValuesProp;
+		}
 	} else if (isDefined(tickInterval)) {
 		const [min, max] = scale.domain();
-		tickValues = d3Range(min, max, (max - min) / tickInterval);
+		const baseTickValues = d3Range(min, max, (max - min) / tickInterval);
+
+		tickValues = tickIntervalFunction
+			? tickIntervalFunction(min, max, tickInterval)
+			: baseTickValues;
 	} else if (isDefined(scale.ticks)) {
 		tickValues = scale.ticks(tickArguments, flexTicks);
 	} else {
